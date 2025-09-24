@@ -458,14 +458,14 @@
         <span class="label-text">Patente fixe N-1 (avant abattement) :</span>
         <span class="info-icon" tabindex="0" data-tooltip="Montant de la patente fixe due au titre de l&#39;année N-1 avant application d&#39;un abattement.">?</span>
       </label>
-      <input type="text" id="principalAnnuel" name="principalAnnuel" />
+      <input type="text" id="principalAnnuel" name="principalAnnuel" data-format="currency" />
     </div>
     <div class="form-row">
       <label for="abattement">
         <span class="label-text">Taux d&#39;abattement (%) :</span>
         <span class="info-icon" tabindex="0" data-tooltip="Taux d&#39;abattement applicable selon le statut fiscal du contribuable.">?</span>
       </label>
-      <input type="text" id="abattement" name="abattement" />
+      <input type="text" id="abattement" name="abattement" data-format="percent" />
     </div>
     <div class="form-row">
       <label></label>
@@ -483,14 +483,14 @@
           <span class="label-text" id="importLabel1Text">Importations CAF :</span>
           <span class="info-icon" tabindex="0" data-tooltip="Montant total des importations CAF retenues pour la base annuelle N-1.">?</span>
         </label>
-        <input type="text" id="importations1" name="importations1" />
+        <input type="text" id="importations1" name="importations1" data-format="currency" />
       </div>
       <div class="form-row" id="importRow2" style="display: none;">
         <label for="importations2">
           <span class="label-text" id="importLabel2Text"></span>
           <span class="info-icon" tabindex="0" data-tooltip="Montant des importations CAF réalisées sur la période de l&#39;exercice N à proratiser.">?</span>
         </label>
-        <input type="text" id="importations2" name="importations2" />
+        <input type="text" id="importations2" name="importations2" data-format="currency" />
       </div>
       <div class="form-row">
         <label for="totalImports">
@@ -504,7 +504,7 @@
           <span class="label-text">Taux proportionnel (%) :</span>
           <span class="info-icon" tabindex="0" data-tooltip="Taux officiel du droit proportionnel sur les importations (en pourcentage).">?</span>
         </label>
-        <input type="text" id="tauxProp" name="tauxProp" value="1.2" />
+        <input type="text" id="tauxProp" name="tauxProp" data-format="percent" />
       </div>
       <div class="form-row">
         <label for="proportionnelPeriode">
@@ -532,28 +532,28 @@
           <span class="label-text">CCI (%) :</span>
           <span class="info-icon" tabindex="0" data-tooltip="Taux des centimes additionnels CCI applicable à la commune sélectionnée.">?</span>
         </label>
-        <input type="text" id="centimeCCI" name="centimeCCI" />
+        <input type="text" id="centimeCCI" name="centimeCCI" data-format="percent" />
       </div>
       <div class="form-row">
         <label for="centimeCMA">
           <span class="label-text">CMA (%) :</span>
           <span class="info-icon" tabindex="0" data-tooltip="Taux des centimes additionnels CMA applicable à la commune sélectionnée.">?</span>
         </label>
-        <input type="text" id="centimeCMA" name="centimeCMA" />
+        <input type="text" id="centimeCMA" name="centimeCMA" data-format="percent" />
       </div>
       <div class="form-row">
         <label for="centimeProv">
           <span class="label-text">Provinciaux (%) :</span>
           <span class="info-icon" tabindex="0" data-tooltip="Taux des centimes additionnels provinciaux applicable à la commune.">?</span>
         </label>
-        <input type="text" id="centimeProv" name="centimeProv" />
+        <input type="text" id="centimeProv" name="centimeProv" data-format="percent" />
       </div>
       <div class="form-row">
         <label for="centimeComm">
           <span class="label-text">Communaux (%) :</span>
           <span class="info-icon" tabindex="0" data-tooltip="Taux des centimes additionnels communaux applicable à la commune.">?</span>
         </label>
-        <input type="text" id="centimeComm" name="centimeComm" />
+        <input type="text" id="centimeComm" name="centimeComm" data-format="percent" />
       </div>
     </fieldset>
 
@@ -693,18 +693,90 @@
           return expr.split(/[\+;]/).reduce((acc, val) => acc + (Number(val) || 0), 0);
         } catch (e) { return 0; }
       };
-      const formatXPF = (n) => {
-        const value = Math.round(Number(n) || 0);
-        return value.toLocaleString('fr-FR').replace(/\u202f/g, ' ');
-      };
-      const formatInput = (n) => {
-        const value = Math.round(Number(n) || 0);
-        return value ? value.toLocaleString('fr-FR').replace(/\u202f/g, ' ') : '';
-      };
-      const getNumericValues = (keys) => keys.reduce((acc, key) => {
-        acc[key] = evalInput(inputs[key].value);
-        return acc;
-      }, {});
+        const formatXPF = (n) => {
+          const value = Math.round(Number(n) || 0);
+          return value.toLocaleString('fr-FR').replace(/\u202f/g, ' ');
+        };
+
+        const formatCurrencyField = (n, { keepZero = false } = {}) => {
+          const value = Math.round(Number(n) || 0);
+          if (!keepZero && value === 0) return '';
+          return value.toLocaleString('fr-FR').replace(/\u202f/g, ' ');
+        };
+
+        const formatPercentField = (n, { keepZero = true } = {}) => {
+          const number = Number(n);
+          if (!Number.isFinite(number)) return '';
+          if (!keepZero && number === 0) return '';
+          const hasDecimals = Math.abs(number % 1) > 1e-9;
+          return number
+            .toLocaleString('fr-FR', {
+              minimumFractionDigits: hasDecimals ? 1 : 0,
+              maximumFractionDigits: 2,
+            })
+            .replace(/\u202f/g, ' ');
+        };
+
+        const formatValueForField = (value, type, options = {}) => {
+          if (type === 'currency') return formatCurrencyField(value, options);
+          if (type === 'percent') return formatPercentField(value, options);
+          return value;
+        };
+
+        const valueForFocus = (value, type) => {
+          if (type === 'currency') {
+            const num = Math.round(Number(value) || 0);
+            return String(num);
+          }
+          if (type === 'percent') {
+            const num = Number(value);
+            if (!Number.isFinite(num)) return '';
+            return num.toString().replace('.', ',');
+          }
+          return value;
+        };
+
+        const STORAGE_PREFIX = 'patente_';
+        const STORAGE_KEYS = ['centimeCCI', 'centimeCMA', 'centimeProv', 'centimeComm'];
+        const DEFAULT_RATES = {
+          centimeCCI: 11,
+          centimeCMA: 10,
+          centimeProv: 30,
+          centimeComm: 60,
+        };
+
+        const storage = {
+          get(key) {
+            try {
+              return localStorage.getItem(STORAGE_PREFIX + key);
+            } catch (e) {
+              return null;
+            }
+          },
+          set(key, value) {
+            try {
+              if (value === '' || value === null || value === undefined) {
+                localStorage.removeItem(STORAGE_PREFIX + key);
+              } else {
+                localStorage.setItem(STORAGE_PREFIX + key, value);
+              }
+            } catch (e) {
+              // stockage indisponible, ignorer
+            }
+          },
+          clearAll() {
+            try {
+              STORAGE_KEYS.forEach((key) => localStorage.removeItem(STORAGE_PREFIX + key));
+            } catch (e) {
+              // stockage indisponible, ignorer
+            }
+          }
+        };
+
+        const getNumericValues = (keys) => keys.reduce((acc, key) => {
+          acc[key] = evalInput(inputs[key].value);
+          return acc;
+        }, {});
       const enhanceTooltips = () => {
         if (document.body.dataset.tooltipsEnhanced) return;
         document.body.dataset.tooltipsEnhanced = 'true';
@@ -810,8 +882,8 @@
             outputs.resultPatente.innerHTML = "";
         }
 
-        outputs.totalImports.value = formatInput(res.totalImports);
-        outputs.proportionnelPeriode.value = formatInput(res.proportionnelPeriode);
+          outputs.totalImports.value = formatCurrencyField(res.totalImports);
+          outputs.proportionnelPeriode.value = formatCurrencyField(res.proportionnelPeriode);
         outputs.baseCentimes.textContent = formatXPF(res.baseCentimes);
         outputs.cciResult.textContent = formatXPF(res.montantCCI);
         outputs.cmaResult.textContent = formatXPF(res.montantCMA);
@@ -854,21 +926,27 @@
       };
 
       // --- GESTION DES ÉVÉNEMENTS ---
-      const handleCommuneChange = () => {
-        const commune = inputs.commune.value;
-        const taux = TAUX_CENTIMES_COMMUNES[commune];
-        if (taux) {
-          inputs.centimeCCI.value = taux.cci;
-          inputs.centimeCMA.value = taux.cma;
-          inputs.centimeProv.value = taux.provinciaux;
-          inputs.centimeComm.value = taux.communaux;
-        }
-        calculateAll();
-      };
+        const handleCommuneChange = () => {
+          const commune = inputs.commune.value;
+          const taux = TAUX_CENTIMES_COMMUNES[commune];
+          if (taux) {
+            const mapping = [
+              ['centimeCCI', taux.cci],
+              ['centimeCMA', taux.cma],
+              ['centimeProv', taux.provinciaux],
+              ['centimeComm', taux.communaux],
+            ];
+            mapping.forEach(([key, value]) => {
+              inputs[key].value = formatPercentField(value, { keepZero: true });
+              storage.set(key, value.toString());
+            });
+          }
+          calculateAll();
+        };
 
       const startNew = () => {
         form.reset();
-        localStorage.clear();
+          storage.clearAll();
         uiElements.welcomeModal.classList.remove('visible');
         initFormValues();
         updateClotureDisplay();
@@ -895,23 +973,34 @@
         const file = event.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = (e) => {
-          try {
-            const data = JSON.parse(e.target.result);
-            for (const key in data) {
-              if (inputs[key]) {
-                const oldKeyCenti = `centi${key.substring(7)}`; 
-                inputs[key].value = data[key] || data[oldKeyCenti] || '';
+          reader.onload = (e) => {
+            try {
+              const data = JSON.parse(e.target.result);
+              for (const key in data) {
+                if (!inputs[key]) continue;
+                const oldKeyCenti = `centi${key.substring(7)}`;
+                const value = data[key] ?? data[oldKeyCenti];
+                if (value === undefined || value === null) {
+                  inputs[key].value = '';
+                  if (STORAGE_KEYS.includes(key)) storage.set(key, '');
+                  continue;
+                }
+
+                inputs[key].value = value;
+                if (inputs[key].dataset.format) {
+                  const numeric = evalInput(String(value));
+                  inputs[key].value = formatValueForField(numeric, inputs[key].dataset.format, { keepZero: true });
+                  if (STORAGE_KEYS.includes(key)) storage.set(key, numeric.toString());
+                }
               }
+              uiElements.welcomeModal.classList.remove('visible');
+              updateClotureDisplay();
+              handleCommuneChange(); // Assurer la mise à jour des taux si une commune est chargée
+              calculateAll();
+            } catch (err) {
+              showAlert('Le fichier de sauvegarde est invalide ou corrompu.', 'Erreur de chargement');
             }
-            uiElements.welcomeModal.classList.remove('visible');
-            updateClotureDisplay();
-            handleCommuneChange(); // Assurer la mise à jour des taux si une commune est chargée
-            calculateAll();
-          } catch (err) {
-            showAlert('Le fichier de sauvegarde est invalide ou corrompu.', 'Erreur de chargement');
-          }
-        };
+          };
         reader.readAsText(file);
         event.target.value = '';
       };
@@ -975,33 +1064,47 @@
         buttons.alertClose.addEventListener('click', () => uiElements.alertModal.classList.remove('visible'));
         uiElements.importFileInput.addEventListener('change', loadFromFile);
 
-        // Auto-formatage des champs numériques
-        Object.values(inputs).forEach(input => {
-          if (input.type === 'text' && input.id !== 'client' && input.id !== 'etabliPar' && input.id !== 'journalComptable') {
+          // Auto-formatage des champs numériques ciblés
+          Object.values(inputs).forEach((input) => {
+            if (input.type !== 'text' || !input.dataset.format) return;
+
             input.addEventListener('blur', () => {
-              const val = evalInput(input.value);
-              input.value = val ? formatInput(val) : '';
+              const raw = input.value.trim();
+              if (!raw) {
+                input.value = '';
+                if (STORAGE_KEYS.includes(input.id)) storage.set(input.id, '');
+                calculateAll();
+                return;
+              }
+
+              const numeric = evalInput(raw);
+              input.value = formatValueForField(numeric, input.dataset.format, { keepZero: true });
+              if (STORAGE_KEYS.includes(input.id)) storage.set(input.id, numeric.toString());
               calculateAll(); // Recalculer après le formatage
             });
-            input.addEventListener('focus', () => {
-              const val = evalInput(input.value)
-              input.value = val ? val.toString().replace('.', ',') : '';
-            });
-          }
-        });
-      };
 
-      const initFormValues = () => {
-        inputs.tauxProp.value = '1,2';
-        inputs.centimeCCI.value = localStorage.getItem('centimeCCI') || '11';
-        inputs.centimeCMA.value = localStorage.getItem('centimeCMA') || '10';
-        inputs.centimeProv.value = localStorage.getItem('centimeProv') || '30';
-        inputs.centimeComm.value = localStorage.getItem('centimeComm') || '60';
-        inputs.journalComptable.value = 'OD';
-        inputs.compteCharge.value = "635100";
-        inputs.compteTier.value = "447000";
-        calculateAll();
-      };
+            input.addEventListener('focus', () => {
+              const raw = input.value.trim();
+              if (!raw) return;
+              const numeric = evalInput(raw);
+              input.value = valueForFocus(numeric, input.dataset.format);
+            });
+          });
+        };
+
+        const initFormValues = () => {
+          inputs.tauxProp.value = formatPercentField(1.2, { keepZero: true });
+
+          STORAGE_KEYS.forEach((key) => {
+            const stored = storage.get(key);
+            const numeric = stored !== null && stored !== '' ? Number(stored) : DEFAULT_RATES[key];
+            inputs[key].value = formatPercentField(numeric, { keepZero: true });
+          });
+          inputs.journalComptable.value = 'OD';
+          inputs.compteCharge.value = "635100";
+          inputs.compteTier.value = "447000";
+          calculateAll();
+        };
 
       initFormValues();
       initEventListeners();
