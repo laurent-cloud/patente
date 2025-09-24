@@ -15,10 +15,11 @@
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      margin: 20px;
-      max-width: 950px;
-      background: var(--background-color);
+      margin: 20px auto;
+      max-width: 960px;
+      background: linear-gradient(180deg, #fffdfa 0%, var(--background-color) 35%, #fff 100%);
       color: #333;
+      line-height: 1.5;
     }
     #header {
       display: flex;
@@ -102,6 +103,10 @@
       min-width: 110px;
       font-weight: bold;
       text-align: right;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      align-items: center;
     }
     .double-row input, .double-row select {
       flex: 1;
@@ -137,9 +142,13 @@
       margin: 9px 0;
     }
     .form-row label {
-      flex: 0 0 220px;
+      flex: 0 0 240px;
       text-align: right;
       font-weight: bold;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      align-items: center;
     }
     .form-row input, .form-row select {
       flex: 1;
@@ -160,22 +169,141 @@
         font-weight: bold;
     }
     .champ-result {
-      font-weight: bold;
-      font-size: 1.1em;
+      font-weight: 600;
+      font-size: 1.05em;
+      color: #1f3b57;
+    }
+    .label-text {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex: 1;
+      text-align: right;
+      line-height: 1.3;
+    }
+    .info-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--secondary-color);
+      color: #fff;
+      font-size: 0.75em;
+      cursor: help;
+      position: relative;
+      transition: transform 0.15s ease;
+      flex-shrink: 0;
+    }
+    .info-icon:hover,
+    .info-icon:focus {
+      transform: scale(1.05);
+      outline: none;
+    }
+    .info-icon::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: calc(100% + 10px);
+      right: 0;
+      background: #1f3b57;
+      color: #fff;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      width: max(220px, 18ch);
+      max-width: 300px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      transform: translateY(8px);
+      pointer-events: none;
+      z-index: 10;
+      line-height: 1.3;
+      text-align: left;
+    }
+    .helper-text {
+      font-size: 0.85em;
+      color: #365b7c;
+      margin: 6px 0 14px 0;
+      padding-left: 18px;
+    }
+    .info-icon::before {
+      content: '';
+      position: absolute;
+      bottom: calc(100% + 4px);
+      right: 6px;
+      border-width: 6px 6px 0 6px;
+      border-style: solid;
+      border-color: #1f3b57 transparent transparent transparent;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease;
+    }
+    .info-icon:hover::after,
+    .info-icon:focus::after,
+    .info-icon:hover::before,
+    .info-icon:focus::before {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
     }
     .recap-block {
-      margin-top: 20px;
-      padding: 15px 20px;
-      background: var(--form-bg-color);
-      border: 1px solid #e0e0e0;
+      margin-top: 24px;
+      padding: 18px 22px;
+      background: linear-gradient(180deg, #ffffff 0%, #f6fbff 100%);
+      border: 1px solid #d9e6f2;
       border-radius: var(--border-radius);
-      box-shadow: var(--box-shadow);
+      box-shadow: 0 4px 16px rgba(0, 40, 80, 0.08);
+    }
+    .recap-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 12px;
+    }
+    .recap-item {
+      background: rgba(255, 255, 255, 0.65);
+      border-radius: 10px;
+      padding: 14px 16px;
+      border: 1px solid rgba(31, 59, 87, 0.08);
+    }
+    .recap-item strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--primary-color);
+      font-size: 0.9rem;
+      letter-spacing: 0.01em;
+    }
+    .recap-value {
+      font-size: 1.15rem;
+      font-weight: 600;
+    }
+    .recap-total {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(1, 78, 130, 0.15);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    #total {
+      font-size: 1.45em;
+      font-weight: 700;
+      color: var(--primary-color);
     }
     #infoProrata {
       margin: 0 0 12px 8px;
       color: var(--primary-color);
       font-style: italic;
       font-size: 1.03em;
+    }
+    .info-icon:focus-visible {
+      outline: 2px solid var(--secondary-color);
+      outline-offset: 2px;
     }
     #resultPatente {
       font-weight: bold;
@@ -244,9 +372,9 @@
       body { margin: 10px; }
       .double-row { flex-direction: column; gap: 10px; }
       .double-row > div { min-width: 0; }
-      .double-row label { text-align: left; }
+      .double-row label { text-align: left; justify-content: flex-start; }
       .form-row { flex-direction: column; gap: 4px; align-items: flex-start; }
-      .form-row label { text-align: left; width: 100%; }
+      .form-row label { text-align: left; width: 100%; justify-content: flex-start; }
       .form-row input, .form-row select { width: 100%; }
     }
   </style>
@@ -294,11 +422,17 @@
   <form id="patenteForm" autocomplete="off" class="form-block">
     <div class="double-row">
       <div>
-        <label for="client">Nom du client :</label>
+        <label for="client">
+          <span class="label-text">Nom du client :</span>
+          <span class="info-icon" tabindex="0" data-tooltip="Nom du client ou de l&#39;entreprise figurant sur l&#39;écriture comptable.">?</span>
+        </label>
         <input type="text" id="client" name="client" />
       </div>
       <div>
-        <label for="etabliPar">Établi par :</label>
+        <label for="etabliPar">
+          <span class="label-text">Établi par :</span>
+          <span class="info-icon" tabindex="0" data-tooltip="Initiales du collaborateur qui réalise le calcul.">?</span>
+        </label>
         <select id="etabliPar" name="etabliPar">
           <option value="">-- Choisir --</option>
           <option value="OT">OT</option>
@@ -311,17 +445,26 @@
     </div>
     <div class="double-row">
       <div>
-        <label for="periodeFin">Date de clôture :</label>
+        <label for="periodeFin">
+          <span class="label-text">Date de clôture :</span>
+          <span class="info-icon" tabindex="0" data-tooltip="Date de clôture de l&#39;exercice pour lequel la provision est calculée.">?</span>
+        </label>
         <input type="date" id="periodeFin" name="periodeFin" />
       </div>
       <div></div>
     </div>
     <div class="form-row">
-      <label for="principalAnnuel">Patente fixe N-1 (avant abattement) :</label>
+      <label for="principalAnnuel">
+        <span class="label-text">Patente fixe N-1 (avant abattement) :</span>
+        <span class="info-icon" tabindex="0" data-tooltip="Montant de la patente fixe due au titre de l&#39;année N-1 avant application d&#39;un abattement.">?</span>
+      </label>
       <input type="text" id="principalAnnuel" name="principalAnnuel" />
     </div>
     <div class="form-row">
-      <label for="abattement">Taux d'abattement (%) :</label>
+      <label for="abattement">
+        <span class="label-text">Taux d&#39;abattement (%) :</span>
+        <span class="info-icon" tabindex="0" data-tooltip="Taux d&#39;abattement applicable selon le statut fiscal du contribuable.">?</span>
+      </label>
       <input type="text" id="abattement" name="abattement" />
     </div>
     <div class="form-row">
@@ -332,24 +475,42 @@
     <fieldset>
       <legend>Droit proportionnel sur importations</legend>
       <div id="infoProrata"></div>
+      <p class="helper-text">
+        CAF = Coût d'achat des marchandises (#601 et/ou #607) + frêt (#608) + assurance (#608).
+      </p>
       <div class="form-row" id="importRow1">
-        <label id="importLabel1" for="importations1">Importations CAF :</label>
+        <label for="importations1">
+          <span class="label-text" id="importLabel1Text">Importations CAF :</span>
+          <span class="info-icon" tabindex="0" data-tooltip="Montant total des importations CAF retenues pour la base annuelle N-1.">?</span>
+        </label>
         <input type="text" id="importations1" name="importations1" />
       </div>
       <div class="form-row" id="importRow2" style="display: none;">
-        <label id="importLabel2" for="importations2"></label>
+        <label for="importations2">
+          <span class="label-text" id="importLabel2Text"></span>
+          <span class="info-icon" tabindex="0" data-tooltip="Montant des importations CAF réalisées sur la période de l&#39;exercice N à proratiser.">?</span>
+        </label>
         <input type="text" id="importations2" name="importations2" />
       </div>
       <div class="form-row">
-        <label for="totalImports">Total importations CAF retenues :</label>
+        <label for="totalImports">
+          <span class="label-text">Total importations CAF retenues :</span>
+          <span class="info-icon" tabindex="0" data-tooltip="Somme des importations CAF utilisées pour calculer le droit proportionnel.">?</span>
+        </label>
         <input type="text" id="totalImports" name="totalImports" readonly />
       </div>
       <div class="form-row">
-        <label for="tauxProp">Taux proportionnel (%) :</label>
+        <label for="tauxProp">
+          <span class="label-text">Taux proportionnel (%) :</span>
+          <span class="info-icon" tabindex="0" data-tooltip="Taux officiel du droit proportionnel sur les importations (en pourcentage).">?</span>
+        </label>
         <input type="text" id="tauxProp" name="tauxProp" value="1.2" />
       </div>
       <div class="form-row">
-        <label for="proportionnelPeriode">Droit proportionnel période (XPF) :</label>
+        <label for="proportionnelPeriode">
+          <span class="label-text">Droit proportionnel période (XPF) :</span>
+          <span class="info-icon" tabindex="0" data-tooltip="Montant du droit proportionnel calculé pour la période de clôture.">?</span>
+        </label>
         <input type="text" id="proportionnelPeriode" name="proportionnelPeriode" readonly />
       </div>
     </fieldset>
@@ -357,67 +518,95 @@
     <fieldset>
       <legend>Centimes additionnels (%)</legend>
       <div class="form-row">
-        <label for="commune">Commune :</label>
+        <label for="commune">
+          <span class="label-text">Commune :</span>
+          <span class="info-icon" tabindex="0" data-tooltip="Sélectionnez la commune du siège afin de pré-remplir les taux de centimes additionnels.">?</span>
+        </label>
         <select id="commune" name="commune">
           <option value="">-- choisir --</option>
           <option value="Belep">Belep</option><option value="Boulouparis">Boulouparis</option><option value="Bourail">Bourail</option><option value="Canala">Canala</option><option value="Dumbéa">Dumbéa</option><option value="Farino">Farino</option><option value="Hienghene">Hienghene</option><option value="Houailou">Houailou</option><option value="Ile des Pins">Ile des Pins</option><option value="Kaala-Domen">Kaala-Domen</option><option value="Kone">Kone</option><option value="Kouaoua">Kouaoua</option><option value="Koumac">Koumac</option><option value="La Foa">La Foa</option><option value="Lifou">Lifou</option><option value="Maré">Maré</option><option value="Moindou">Moindou</option><option value="Mont-Dore">Mont-Dore</option><option value="Nouméa">Nouméa</option><option value="Ouegoua">Ouegoua</option><option value="Ouvéa">Ouvéa</option><option value="Païta">Païta</option><option value="Poindimié">Poindimié</option><option value="Ponerihouen">Ponerihouen</option><option value="Pouébo">Pouébo</option><option value="Pouembout">Pouembout</option><option value="Poum">Poum</option><option value="Poya">Poya</option><option value="Sarraméa">Sarraméa</option><option value="Thio">Thio</option><option value="Touho">Touho</option><option value="Voh">Voh</option><option value="Yaté">Yaté</option>
         </select>
       </div>
       <div class="form-row">
-        <label for="centimeCCI">CCI (%) :</label>
+        <label for="centimeCCI">
+          <span class="label-text">CCI (%) :</span>
+          <span class="info-icon" tabindex="0" data-tooltip="Taux des centimes additionnels CCI applicable à la commune sélectionnée.">?</span>
+        </label>
         <input type="text" id="centimeCCI" name="centimeCCI" />
       </div>
       <div class="form-row">
-        <label for="centimeCMA">CMA (%) :</label>
+        <label for="centimeCMA">
+          <span class="label-text">CMA (%) :</span>
+          <span class="info-icon" tabindex="0" data-tooltip="Taux des centimes additionnels CMA applicable à la commune sélectionnée.">?</span>
+        </label>
         <input type="text" id="centimeCMA" name="centimeCMA" />
       </div>
       <div class="form-row">
-        <label for="centimeProv">Provinciaux (%) :</label>
+        <label for="centimeProv">
+          <span class="label-text">Provinciaux (%) :</span>
+          <span class="info-icon" tabindex="0" data-tooltip="Taux des centimes additionnels provinciaux applicable à la commune.">?</span>
+        </label>
         <input type="text" id="centimeProv" name="centimeProv" />
       </div>
       <div class="form-row">
-        <label for="centimeComm">Communaux (%) :</label>
+        <label for="centimeComm">
+          <span class="label-text">Communaux (%) :</span>
+          <span class="info-icon" tabindex="0" data-tooltip="Taux des centimes additionnels communaux applicable à la commune.">?</span>
+        </label>
         <input type="text" id="centimeComm" name="centimeComm" />
       </div>
     </fieldset>
-    
+
     <fieldset>
       <legend>Paramètres d’écriture comptable</legend>
       <div class="double-row">
         <div>
-          <label for="journalComptable">Journal :</label>
+          <label for="journalComptable">
+            <span class="label-text">Journal :</span>
+            <span class="info-icon" tabindex="0" data-tooltip="Journal comptable dans lequel l&#39;écriture d&#39;inventaire sera générée.">?</span>
+          </label>
           <input type="text" id="journalComptable" name="journalComptable" value="OD" maxlength="4" />
         </div>
         <div>
-          <label for="compteCharge">Compte de charge :</label>
+          <label for="compteCharge">
+            <span class="label-text">Compte de charge :</span>
+            <span class="info-icon" tabindex="0" data-tooltip="Compte de charge utilisé pour constater la provision de patente.">?</span>
+          </label>
           <input type="text" id="compteCharge" name="compteCharge" maxlength="8" value="635100" />
         </div>
         <div>
-          <label for="compteTier">Compte de tiers :</label>
+          <label for="compteTier">
+            <span class="label-text">Compte de tiers :</span>
+            <span class="info-icon" tabindex="0" data-tooltip="Compte de tiers utilisé pour enregistrer la dette envers l&#39;administration.">?</span>
+          </label>
           <input type="text" id="compteTier" name="compteTier" maxlength="12" value="447000" />
         </div>
       </div>
     </fieldset>
     
-    <button type="button" id="genererCSVBtn" class="btn" style="margin-top: 15px;">Générer le fichier CSV d’import</button>
+    <button type="button" id="genererCSVBtn" class="btn" style="margin-top: 15px;" title="Crée un fichier d&#39;import au format CSV à partir des paramètres saisis.">Générer le fichier CSV d’import</button>
     
     <div class="recap-block">
-      <div>
-        <span class="champ-result">Base centimes (patente fixe brute + droit proportionnel) :</span>
-        <span id="baseCentimes">0</span> XPF
+      <div class="champ-result">Synthèse du calcul</div>
+      <div class="recap-grid">
+        <div class="recap-item">
+          <strong>Base centimes</strong>
+          <div>Patente fixe brute + droit proportionnel</div>
+          <div class="recap-value"><span id="baseCentimes">0</span> XPF</div>
+        </div>
+        <div class="recap-item">
+          <strong>Détail des centimes</strong>
+          <div>CCI : <span id="cciResult">0</span> XPF</div>
+          <div>CMA : <span id="cmaResult">0</span> XPF</div>
+          <div>Provinciaux : <span id="provResult">0</span> XPF</div>
+          <div>Communaux : <span id="commResult">0</span> XPF</div>
+        </div>
+        <div class="recap-item">
+          <strong>Total centimes</strong>
+          <div class="recap-value"><span id="totalCentimes">0</span> XPF</div>
+        </div>
       </div>
-      <div style="margin:7px 0;">
-        <span class="champ-result">Détail des centimes :</span><br>
-        CCI : <span id="cciResult">0</span> XPF |
-        CMA : <span id="cmaResult">0</span> XPF |
-        Provinciaux : <span id="provResult">0</span> XPF |
-        Communaux : <span id="commResult">0</span> XPF
-      </div>
-      <div>
-        <span class="champ-result">Total centimes :</span>
-        <span id="totalCentimes">0</span> XPF
-      </div>
-      <div style="margin-top:8px; font-size: 1.2em;">
+      <div class="recap-total">
         <span class="champ-result">Total provision patente (à comptabiliser) :</span>
         <span id="total">0</span> XPF
       </div>
@@ -462,8 +651,8 @@
         },
         uiElements = {
           importRow2: document.getElementById('importRow2'),
-          importLabel1: document.getElementById('importLabel1'),
-          importLabel2: document.getElementById('importLabel2'),
+          importLabel1Text: document.getElementById('importLabel1Text'),
+          importLabel2Text: document.getElementById('importLabel2Text'),
           infoProrata: document.getElementById('infoProrata'),
           welcomeModal: document.getElementById('welcome-modal-backdrop'),
           alertModal: document.getElementById('alert-modal-backdrop'),
@@ -484,17 +673,51 @@
         "Belep":{communaux:60,cci:11,cma:10,provinciaux:30},"Boulouparis":{communaux:60,cci:11,cma:10,provinciaux:30},"Bourail":{communaux:60,cci:11,cma:10,provinciaux:30},"Canala":{communaux:60,cci:11,cma:10,provinciaux:30},"Dumbéa":{communaux:60,cci:11,cma:10,provinciaux:30},"Farino":{communaux:60,cci:11,cma:10,provinciaux:30},"Hienghene":{communaux:60,cci:11,cma:10,provinciaux:30},"Houailou":{communaux:60,cci:11,cma:10,provinciaux:30},"Ile des Pins":{communaux:60,cci:11,cma:10,provinciaux:30},"Kaala-Domen":{communaux:60,cci:11,cma:10,provinciaux:30},"Kone":{communaux:60,cci:11,cma:10,provinciaux:30},"Kouaoua":{communaux:60,cci:11,cma:10,provinciaux:30},"Koumac":{communaux:60,cci:11,cma:10,provinciaux:30},"La Foa":{communaux:60,cci:11,cma:10,provinciaux:30},"Lifou":{communaux:60,cci:11,cma:10,provinciaux:30},"Maré":{communaux:60,cci:11,cma:10,provinciaux:30},"Moindou":{communaux:60,cci:11,cma:10,provinciaux:30},"Mont-Dore":{communaux:60,cci:11,cma:10,provinciaux:30},"Nouméa":{communaux:60,cci:11,cma:10,provinciaux:30},"Ouegoua":{communaux:60,cci:11,cma:10,provinciaux:30},"Ouvéa":{communaux:60,cci:11,cma:10,provinciaux:30},"Païta":{communaux:60,cci:11,cma:10,provinciaux:30},"Poindimié":{communaux:60,cci:11,cma:10,provinciaux:30},"Ponerihouen":{communaux:60,cci:11,cma:10,provinciaux:30},"Pouébo":{communaux:60,cci:11,cma:10,provinciaux:30},"Pouembout":{communaux:60,cci:11,cma:10,provinciaux:30},"Poum":{communaux:60,cci:11,cma:10,provinciaux:30},"Poya":{communaux:60,cci:11,cma:10,provinciaux:30},"Sarraméa":{communaux:60,cci:11,cma:10,provinciaux:30},"Thio":{communaux:60,cci:11,cma:10,provinciaux:30},"Touho":{communaux:60,cci:11,cma:10,provinciaux:30},"Voh":{communaux:60,cci:11,cma:10,provinciaux:30},"Yaté":{communaux:60,cci:11,cma:10,provinciaux:30}
       };
 
+      const CLOTURE_CONFIGS = {
+        "12-31": { info: "Clôture au 31/12 : Pas de proratisation.", l1: (prevYear) => `Importations CAF ${prevYear}`, show2: false },
+        "03-31": { info: "Clôture au 31/03 : Prorata sur 3 mois.", l1: (prevYear) => `Importations CAF ${prevYear}`, l2: (annee) => `Importations CAF 1er trim. ${annee}`, show2: true },
+        "06-30": { info: "Clôture au 30/06 : Prorata sur 6 mois.", l1: (prevYear) => `Importations CAF ${prevYear}`, l2: (annee) => `Importations CAF 1er sem. ${annee}`, show2: true },
+        "09-30": { info: "Clôture au 30/09 : Prorata sur 9 mois.", l1: (prevYear) => `Importations CAF ${prevYear}`, l2: (annee) => `Importations CAF janv. à sept. ${annee}`, show2: true },
+      };
+
       // --- FONCTIONS UTILITAIRES ---
       const evalInput = (expr) => {
         try {
           if (typeof expr !== "string" || !expr) return 0;
-          expr = expr.replace(/,/g, '.').replace(/\s/g, '');
+          expr = expr
+            .replace(/,/g, '.')
+            .replace(/\u202f/g, '')
+            .replace(/\u00a0/g, '')
+            .replace(/\s/g, '');
           if (/^[0-9\.]+$/.test(expr)) return Number(expr) || 0;
           return expr.split(/[\+;]/).reduce((acc, val) => acc + (Number(val) || 0), 0);
         } catch (e) { return 0; }
       };
-      const formatXPF = (n) => n ? n.toLocaleString('fr-FR') : '0';
-      const formatInput = (n) => n ? n.toLocaleString('fr-FR') : '';
+      const formatXPF = (n) => {
+        const value = Math.round(Number(n) || 0);
+        return value.toLocaleString('fr-FR').replace(/\u202f/g, ' ');
+      };
+      const formatInput = (n) => {
+        const value = Math.round(Number(n) || 0);
+        return value ? value.toLocaleString('fr-FR').replace(/\u202f/g, ' ') : '';
+      };
+      const getNumericValues = (keys) => keys.reduce((acc, key) => {
+        acc[key] = evalInput(inputs[key].value);
+        return acc;
+      }, {});
+      const enhanceTooltips = () => {
+        if (document.body.dataset.tooltipsEnhanced) return;
+        document.body.dataset.tooltipsEnhanced = 'true';
+        document.querySelectorAll('.info-icon').forEach((icon) => {
+          icon.setAttribute('role', 'button');
+          icon.setAttribute('aria-label', icon.dataset.tooltip);
+        });
+        document.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape' && document.activeElement && document.activeElement.classList.contains('info-icon')) {
+            document.activeElement.blur();
+          }
+        });
+      };
 
       const showAlert = (message, title = 'Avertissement') => {
         uiElements.alertTitle.textContent = title;
@@ -505,12 +728,29 @@
       // --- LOGIQUE DE CALCUL (LOGIQUE ORIGINELLE RESTAURÉE) ---
       const calculateAll = () => {
         // 1. Récupération des valeurs
-        const principalAnnuel = evalInput(inputs.principalAnnuel.value);
-        const abattement = evalInput(inputs.abattement.value);
         const dateCloture = inputs.periodeFin.value;
-        const import1 = evalInput(inputs.importations1.value);
-        const import2 = evalInput(inputs.importations2.value);
-        const tauxProp = evalInput(inputs.tauxProp.value);
+
+        const {
+          principalAnnuel,
+          abattement,
+          importations1: import1,
+          importations2: import2,
+          tauxProp,
+          centimeCCI: tauxCCI,
+          centimeCMA: tauxCMA,
+          centimeProv: tauxProv,
+          centimeComm: tauxComm
+        } = getNumericValues([
+          'principalAnnuel',
+          'abattement',
+          'importations1',
+          'importations2',
+          'tauxProp',
+          'centimeCCI',
+          'centimeCMA',
+          'centimeProv',
+          'centimeComm'
+        ]);
 
         let patenteBrute = 0;
         let patenteRetenue = 0;
@@ -540,11 +780,6 @@
         const baseCentimes = Math.round(patenteBrute + proportionnelPeriode);
 
         // 5. Calcul de chaque centime
-        const tauxCCI  = evalInput(inputs.centimeCCI.value);
-        const tauxCMA  = evalInput(inputs.centimeCMA.value);
-        const tauxProv = evalInput(inputs.centimeProv.value);
-        const tauxComm = evalInput(inputs.centimeComm.value);
-        
         // Arrondis appliqués sur chaque ligne, comme dans le code original
         const montantCCI  = Math.round(baseCentimes * tauxCCI / 100);
         const montantCMA  = Math.round(baseCentimes * tauxCMA / 100);
@@ -595,19 +830,12 @@
             const [annee, mois, jour] = dateCloture.split('-').map(Number);
             const prevYear = annee - 1;
             const clotureKey = `${String(mois).padStart(2,'0')}-${String(jour).padStart(2,'0')}`;
-            
-            const configs = {
-                "12-31": { info: "Clôture au 31/12 : Pas de proratisation.", l1: `Importations CAF ${prevYear}`, show2: false },
-                "03-31": { info: "Clôture au 31/03 : Prorata sur 3 mois.", l1: `Importations CAF ${prevYear}`, l2: `Importations CAF 1er trim. ${annee}`, show2: true },
-                "06-30": { info: "Clôture au 30/06 : Prorata sur 6 mois.", l1: `Importations CAF ${prevYear}`, l2: `Importations CAF 1er sem. ${annee}`, show2: true },
-                "09-30": { info: "Clôture au 30/09 : Prorata sur 9 mois.", l1: `Importations CAF ${prevYear}`, l2: `Importations CAF janv. à sept. ${annee}`, show2: true },
-            };
 
-            const config = configs[clotureKey];
+            const config = CLOTURE_CONFIGS[clotureKey];
             if (config) {
                 info = config.info;
-                label1 = config.l1;
-                label2 = config.l2 || '';
+                label1 = config.l1(prevYear);
+                label2 = config.l2 ? config.l2(annee) : '';
                 showImport2 = config.show2;
             } else {
                 info = "Clôture non standard : vérifiez manuellement les périodes à retenir.";
@@ -615,13 +843,13 @@
                 showImport2 = false;
             }
         }
-        
+
         uiElements.infoProrata.textContent = info;
-        uiElements.importLabel1.textContent = label1;
-        uiElements.importLabel2.textContent = label2;
+        uiElements.importLabel1Text.textContent = label1;
+        uiElements.importLabel2Text.textContent = label2;
         uiElements.importRow2.style.display = showImport2 ? "" : "none";
         if (!showImport2) inputs.importations2.value = '';
-        
+
         calculateAll();
       };
 
@@ -695,7 +923,7 @@
           return;
         }
         
-        const montant = evalInput(outputs.total.textContent);
+        const montant = Math.round(evalInput(outputs.total.textContent));
         if (!montant || isNaN(montant) || montant === 0) {
           showAlert("Le montant total est nul ou invalide. Impossible de générer le fichier.");
           return;
@@ -709,11 +937,13 @@
         const compteCharge = (inputs.compteCharge.value || '635100').replace(/\s/g,'');
         const compteTier = (inputs.compteTier.value || '447000').replace(/\s/g,'');
         const client = (inputs.client.value || '').trim();
-        const libelle = `Provision patente ${client}`.substring(0, 35);
+        const tiers = client.replace(/[;\n\r]/g, ' ').trim();
+        const libelle = `Provision patente ${client}`.replace(/[;\n\r]/g, ' ').substring(0, 35);
 
-        const header = 'date;piece;journal;compte;souscompte;libelle;debit;credit\n';
-        const ligneCharge = [dateMvt, piece, journal, compteCharge, '', libelle, montant, ''].join(';');
-        const ligneTier = [dateMvt, piece, journal, compteTier, '', libelle, '', montant].join(';');
+        const montantCsv = formatXPF(montant);
+        const header = 'date;piece;journal;compte;tiers;libelle;debit;credit\n';
+        const ligneCharge = [dateMvt, piece, journal, compteCharge, '', libelle, montantCsv, ''].join(';');
+        const ligneTier = [dateMvt, piece, journal, compteTier, tiers, libelle, '', montantCsv].join(';');
         const csvContent = header + ligneCharge + '\n' + ligneTier + '\n';
 
         const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -772,10 +1002,11 @@
         inputs.compteTier.value = "447000";
         calculateAll();
       };
-      
+
       initFormValues();
       initEventListeners();
       updateClotureDisplay();
+      enhanceTooltips();
     });
   </script>
 </body>
