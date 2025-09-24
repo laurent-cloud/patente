@@ -377,6 +377,14 @@
       .form-row label { text-align: left; width: 100%; justify-content: flex-start; }
       .form-row input, .form-row select { width: 100%; }
     }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -469,7 +477,7 @@
     </div>
     <div class="form-row">
       <label></label>
-      <span id="resultPatente"></span>
+      <span id="resultPatente" aria-live="polite"></span>
     </div>
 
     <fieldset>
@@ -608,7 +616,7 @@
       </div>
       <div class="recap-total">
         <span class="champ-result">Total provision patente (à comptabiliser) :</span>
-        <span id="total">0</span> XPF
+        <span id="total" aria-live="polite">0</span> XPF
       </div>
     </div>
   </form>
@@ -661,13 +669,15 @@
           importFileInput: document.getElementById('importFileInput')
         },
         buttons = {
-            startNew: document.getElementById('startNewBtn'),
-            loadFromFile: document.getElementById('loadFromFileBtn'),
-            save: document.getElementById('sauvegarderBtn'),
-            load: document.getElementById('chargerBtn'),
-            generateCSV: document.getElementById('genererCSVBtn'),
-            alertClose: document.getElementById('alert-modal-close')
+          startNew: document.getElementById('startNewBtn'),
+          loadFromFile: document.getElementById('loadFromFileBtn'),
+          save: document.getElementById('sauvegarderBtn'),
+          load: document.getElementById('chargerBtn'),
+          generateCSV: document.getElementById('genererCSVBtn'),
+          alertClose: document.getElementById('alert-modal-close')
         };
+
+      let lastComputation = null;
 
       const TAUX_CENTIMES_COMMUNES = {
         "Belep":{communaux:60,cci:11,cma:10,provinciaux:30},"Boulouparis":{communaux:60,cci:11,cma:10,provinciaux:30},"Bourail":{communaux:60,cci:11,cma:10,provinciaux:30},"Canala":{communaux:60,cci:11,cma:10,provinciaux:30},"Dumbéa":{communaux:60,cci:11,cma:10,provinciaux:30},"Farino":{communaux:60,cci:11,cma:10,provinciaux:30},"Hienghene":{communaux:60,cci:11,cma:10,provinciaux:30},"Houailou":{communaux:60,cci:11,cma:10,provinciaux:30},"Ile des Pins":{communaux:60,cci:11,cma:10,provinciaux:30},"Kaala-Domen":{communaux:60,cci:11,cma:10,provinciaux:30},"Kone":{communaux:60,cci:11,cma:10,provinciaux:30},"Kouaoua":{communaux:60,cci:11,cma:10,provinciaux:30},"Koumac":{communaux:60,cci:11,cma:10,provinciaux:30},"La Foa":{communaux:60,cci:11,cma:10,provinciaux:30},"Lifou":{communaux:60,cci:11,cma:10,provinciaux:30},"Maré":{communaux:60,cci:11,cma:10,provinciaux:30},"Moindou":{communaux:60,cci:11,cma:10,provinciaux:30},"Mont-Dore":{communaux:60,cci:11,cma:10,provinciaux:30},"Nouméa":{communaux:60,cci:11,cma:10,provinciaux:30},"Ouegoua":{communaux:60,cci:11,cma:10,provinciaux:30},"Ouvéa":{communaux:60,cci:11,cma:10,provinciaux:30},"Païta":{communaux:60,cci:11,cma:10,provinciaux:30},"Poindimié":{communaux:60,cci:11,cma:10,provinciaux:30},"Ponerihouen":{communaux:60,cci:11,cma:10,provinciaux:30},"Pouébo":{communaux:60,cci:11,cma:10,provinciaux:30},"Pouembout":{communaux:60,cci:11,cma:10,provinciaux:30},"Poum":{communaux:60,cci:11,cma:10,provinciaux:30},"Poya":{communaux:60,cci:11,cma:10,provinciaux:30},"Sarraméa":{communaux:60,cci:11,cma:10,provinciaux:30},"Thio":{communaux:60,cci:11,cma:10,provinciaux:30},"Touho":{communaux:60,cci:11,cma:10,provinciaux:30},"Voh":{communaux:60,cci:11,cma:10,provinciaux:30},"Yaté":{communaux:60,cci:11,cma:10,provinciaux:30}
@@ -681,40 +691,51 @@
       };
 
       // --- FONCTIONS UTILITAIRES ---
-      const evalInput = (expr) => {
-        try {
-          if (typeof expr !== "string" || !expr) return 0;
-          expr = expr
-            .replace(/,/g, '.')
-            .replace(/\u202f/g, '')
-            .replace(/\u00a0/g, '')
-            .replace(/\s/g, '');
-          if (/^[0-9\.]+$/.test(expr)) return Number(expr) || 0;
-          return expr.split(/[\+;]/).reduce((acc, val) => acc + (Number(val) || 0), 0);
-        } catch (e) { return 0; }
-      };
-        const formatXPF = (n) => {
-          const value = Math.round(Number(n) || 0);
-          return value.toLocaleString('fr-FR').replace(/\u202f/g, ' ');
+        const sanitizeGrouping = (text) => text
+          .replace(/\u202f/g, ' ')
+          .replace(/\u00a0/g, ' ');
+
+        const XPF_FORMATTER = new Intl.NumberFormat('fr-FR', {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+          useGrouping: true,
+        });
+
+        const evalInput = (expr) => {
+          try {
+            if (typeof expr !== "string" || !expr) return 0;
+            expr = expr
+              .replace(/,/g, '.')
+              .replace(/\u202f/g, '')
+              .replace(/\u00a0/g, '')
+              .replace(/\s/g, '');
+            if (/^[0-9\.]+$/.test(expr)) return Number(expr) || 0;
+            return expr.split(/[\+;]/).reduce((acc, val) => acc + (Number(val) || 0), 0);
+          } catch (e) { return 0; }
         };
 
-        const formatCurrencyField = (n, { keepZero = false } = {}) => {
-          const value = Math.round(Number(n) || 0);
-          if (!keepZero && value === 0) return '';
-          return value.toLocaleString('fr-FR').replace(/\u202f/g, ' ');
+        const formatXPF = (value) => {
+          const number = Math.round(Number(value) || 0);
+          return sanitizeGrouping(XPF_FORMATTER.format(number));
         };
 
-        const formatPercentField = (n, { keepZero = true } = {}) => {
-          const number = Number(n);
+        const formatCurrencyField = (value, { keepZero = false } = {}) => {
+          const number = Math.round(Number(value) || 0);
+          if (!keepZero && number === 0) return '';
+          return sanitizeGrouping(XPF_FORMATTER.format(number));
+        };
+
+        const formatPercentField = (value, { keepZero = true } = {}) => {
+          const number = Number(value);
           if (!Number.isFinite(number)) return '';
           if (!keepZero && number === 0) return '';
           const hasDecimals = Math.abs(number % 1) > 1e-9;
-          return number
-            .toLocaleString('fr-FR', {
+          return sanitizeGrouping(
+            number.toLocaleString('fr-FR', {
               minimumFractionDigits: hasDecimals ? 1 : 0,
               maximumFractionDigits: 2,
             })
-            .replace(/\u202f/g, ' ');
+          );
         };
 
         const formatValueForField = (value, type, options = {}) => {
@@ -858,40 +879,57 @@
         const montantProv = Math.round(baseCentimes * tauxProv / 100);
         const montantComm = Math.round(baseCentimes * tauxComm / 100);
 
-        const totalCentimes = montantCCI + montantCMA + montantProv + montantComm;
+          const totalCentimes = montantCCI + montantCMA + montantProv + montantComm;
 
-        // 6. Calcul du total final
-        // C'est la patente NETTE (après abattement) + le total des centimes
-        const totalFinal = patenteRetenue + totalCentimes;
+          // 6. Calcul du total final
+          // C'est la patente NETTE (après abattement) + le total des centimes
+          const totalFinal = patenteRetenue + totalCentimes;
 
-        updateUI({
-          patenteRetenue, moisProrata, totalImports, proportionnelPeriode,
-          baseCentimes, montantCCI, montantCMA, montantProv, montantComm,
-          totalCentimes, totalFinal
-        });
-      };
+          lastComputation = {
+            patenteRetenue,
+            moisProrata,
+            totalImports,
+            proportionnelPeriode,
+            baseCentimes,
+            montantCCI,
+            montantCMA,
+            montantProv,
+            montantComm,
+            totalCentimes,
+            totalFinal,
+          };
+
+          updateUI(lastComputation);
+        };
 
       // --- MISE À JOUR DE L'INTERFACE ---
-      const updateUI = (res) => {
-        if (inputs.periodeFin.value) {
-            let info = res.moisProrata === 12 
-                ? `Montant de la patente fixe après abattement : <b>${formatXPF(res.patenteRetenue)} XPF</b>`
-                : `Montant de la patente fixe après abattement, proratisé (${res.moisProrata} mois/12) : <b>${formatXPF(res.patenteRetenue)} XPF</b>`;
+        const updateUI = (res) => {
+          if (inputs.periodeFin.value) {
+            const info = res.moisProrata === 12
+              ? `Montant de la patente fixe après abattement : <b>${formatXPF(res.patenteRetenue)} XPF</b>`
+              : `Montant de la patente fixe après abattement, proratisé (${res.moisProrata} mois/12) : <b>${formatXPF(res.patenteRetenue)} XPF</b>`;
             outputs.resultPatente.innerHTML = info;
-        } else {
-            outputs.resultPatente.innerHTML = "";
-        }
+          } else {
+            outputs.resultPatente.textContent = '';
+          }
 
-          outputs.totalImports.value = formatCurrencyField(res.totalImports);
-          outputs.proportionnelPeriode.value = formatCurrencyField(res.proportionnelPeriode);
-        outputs.baseCentimes.textContent = formatXPF(res.baseCentimes);
-        outputs.cciResult.textContent = formatXPF(res.montantCCI);
-        outputs.cmaResult.textContent = formatXPF(res.montantCMA);
-        outputs.provResult.textContent = formatXPF(res.montantProv);
-        outputs.commResult.textContent = formatXPF(res.montantComm);
-        outputs.totalCentimes.textContent = formatXPF(res.totalCentimes);
-        outputs.total.textContent = formatXPF(res.totalFinal);
-      };
+          outputs.totalImports.value = formatCurrencyField(res.totalImports, { keepZero: true });
+          outputs.proportionnelPeriode.value = formatCurrencyField(res.proportionnelPeriode, { keepZero: true });
+
+          const currencyOutputs = {
+            baseCentimes: res.baseCentimes,
+            cciResult: res.montantCCI,
+            cmaResult: res.montantCMA,
+            provResult: res.montantProv,
+            commResult: res.montantComm,
+            totalCentimes: res.totalCentimes,
+            total: res.totalFinal,
+          };
+
+          Object.entries(currencyOutputs).forEach(([key, value]) => {
+            outputs[key].textContent = formatXPF(value);
+          });
+        };
       
       const updateClotureDisplay = () => {
         const dateCloture = inputs.periodeFin.value;
@@ -946,7 +984,8 @@
 
       const startNew = () => {
         form.reset();
-          storage.clearAll();
+        lastComputation = null;
+        storage.clearAll();
         uiElements.welcomeModal.classList.remove('visible');
         initFormValues();
         updateClotureDisplay();
@@ -973,10 +1012,11 @@
         const file = event.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-          reader.onload = (e) => {
-            try {
-              const data = JSON.parse(e.target.result);
-              for (const key in data) {
+        reader.onload = (e) => {
+          lastComputation = null;
+          try {
+            const data = JSON.parse(e.target.result);
+            for (const key in data) {
                 if (!inputs[key]) continue;
                 const oldKeyCenti = `centi${key.substring(7)}`;
                 const value = data[key] ?? data[oldKeyCenti];
@@ -1012,8 +1052,13 @@
           return;
         }
         
-        const montant = Math.round(evalInput(outputs.total.textContent));
-        if (!montant || isNaN(montant) || montant === 0) {
+        if (!lastComputation) {
+          showAlert("Veuillez effectuer un calcul valide avant de générer le CSV.");
+          return;
+        }
+
+        const montant = Math.round(Number(lastComputation.totalFinal || 0));
+        if (!montant || Number.isNaN(montant) || montant === 0) {
           showAlert("Le montant total est nul ou invalide. Impossible de générer le fichier.");
           return;
         }
